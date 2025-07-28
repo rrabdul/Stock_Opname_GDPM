@@ -1,9 +1,9 @@
 <x-layouts.base>
-
-
-        @if(in_array(request()->route()->getName(), ['dashboard', 'profile', 'profile-example', 'users', 'bootstrap-tables', 'transactions',
-    'buttons',
-    'forms', 'modals', 'notifications', 'typography', 'upgrade-to-pro', 'upgrade-to-pro','stock.index','transaction-create.']))
+    @if(in_array(request()->route()->getName(), 
+    ['dashboard', 'profile', 'profile-example', 'users', 'bootstrap-tables', 'transactions',
+    'buttons','forms', 'modals', 'notifications', 'typography', 'upgrade-to-pro', 
+    'upgrade-to-pro','stock.index','transaction-create.', 'transaction.in', 'transaction.out'
+    ]))
 
 
     {{-- Nav --}}

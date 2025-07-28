@@ -33,6 +33,6 @@ class BarangCreate extends Component
 
     public function render()
     {
-        return view('livewire.barang-create');
+        return view('barang.barang-create');
     }
 }

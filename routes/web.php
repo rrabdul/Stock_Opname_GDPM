@@ -28,6 +28,8 @@ use App\Http\Livewire\Users;
 use App\Http\Livewire\Stock;
 use App\Http\Livewire\BarangCreate;
 use App\Http\Livewire\TransactionCreate;
+use App\Http\Livewire\TransactionIn;
+use App\Http\Livewire\TransactionOut;
 
 /*
 |--------------------------------------------------------------------------
@@ -59,6 +61,10 @@ Route::get('/barang/create', BarangCreate::class)->name('barang.create');
 Route::get('/stock', Stock::class)->name('stock');
 
 Route::get('/transaction-create', TransactionCreate::class)->name('transaction-create');
+
+//Transaction root
+Route::get('/transaction-in', TransactionIn::class)->name('transaction.in');
+Route::get('/transaction-out', TransactionOut::class)->name('transaction.out');
 
 Route::middleware('auth')->group(function () {
     Route::get('/profile', Profile::class)->name('profile');

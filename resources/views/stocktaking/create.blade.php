@@ -80,7 +80,11 @@
                     <tr wire:click="goToDetail({{ $header->id }})" style="cursor:pointer;" class="align-middle">
                         <td>{{ $header->title }}</td>
                         <td>{{ $header->area }}</td>
-                        <td><span class="badge bg-info">{{ $header->status }}</span></td>
+                        <td>
+                            <span class="badge {{ $header->status === 'Done' ? 'bg-success' : 'bg-info' }}">
+                                {{ $header->status }}
+                            </span>
+                        </td>
                         <td>{{ $header->created_by }}</td>
                         <td>{{ \Carbon\Carbon::parse($header->created_at)->format('d M Y') }}</td>
                     </tr>

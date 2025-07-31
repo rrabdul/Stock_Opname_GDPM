@@ -8,7 +8,7 @@
         'buttons','forms', 'modals', 'notifications', 'typography', 'upgrade-to-pro',
         'stock.index','transaction-create.', 'transaction.in', 'transaction.out',
         'stocktaking.gdtp','stocktaking.production','transaction.return',
-        'stocktaking.create','stocktaking.detail'
+        'stocktaking.create','stocktaking.detail','stocktaking.report','stocktaking.reportdetail',
     ]))
         {{-- Nav --}}
         @include('layouts.nav')

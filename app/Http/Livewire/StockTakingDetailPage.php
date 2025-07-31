@@ -10,13 +10,23 @@ use Illuminate\Support\Facades\Auth;
 
 class StockTakingDetailPage extends Component
 {
+    // Data utama
     public $header;
     public $details = [];
     public $barangs = [];
 
+    // Form input
     public $item_code, $item_name, $qty_aktual;
     public $editingId = null;
     public $showModal = false;
+
+    public $searchTitle = '';
+    public $dateFrom = null;
+    public $dateTo = null;
+
+
+    // Pencarian daftar barang di tabel
+    public $searchItem = '';
 
     public function mount($id)
     {
@@ -34,10 +44,22 @@ class StockTakingDetailPage extends Component
         ]);
     }
 
-    public function updatedItemCode($value)
+    public function updatedSearchItem()
     {
-        $barang = DataBaseBarang::where('item_code', $value)->first();
-        $this->item_name = $barang ? $barang->item_name : '';
+        $this->loadDetails();
+    }
+
+    public function loadDetails()
+    {
+        $this->details = StockTakingDetail::where('stock_taking_header_id', $this->header->id)
+            ->when($this->searchItem, function ($query) {
+                $query->where(function ($q) {
+                    $q->where('item_name', 'like', '%' . $this->searchItem . '%')
+                      ->orWhere('item_code', 'like', '%' . $this->searchItem . '%');
+                });
+            })
+            ->orderBy('created_at', 'desc')
+            ->get();
     }
 
     public function openModal()
@@ -58,6 +80,12 @@ class StockTakingDetailPage extends Component
         $this->item_name = '';
         $this->qty_aktual = '';
         $this->editingId = null;
+    }
+
+    public function updatedItemCode($value)
+    {
+        $barang = DataBaseBarang::where('item_code', $value)->first();
+        $this->item_name = $barang ? $barang->item_name : '';
     }
 
     public function edit($id)
@@ -101,14 +129,20 @@ class StockTakingDetailPage extends Component
         $this->loadDetails();
     }
 
-    public function loadDetails()
-    {
-        $this->details = StockTakingDetail::where('stock_taking_header_id', $this->header->id)->get();
-    }
-
     public function submitStockTaking()
     {
-        $this->header->update(['status' => 'Done']);
+        $this->header->status = 'Done';
+        $this->header->submitted_by = Auth::check() ? Auth::user()->name : 'Guest';
+        $this->header->save();
+
         session()->flash('message', 'Stock Taking berhasil disubmit.');
     }
+
+    public function refreshPage()
+    {
+        $this->loadDetails();
+    }
+
+
+
 }

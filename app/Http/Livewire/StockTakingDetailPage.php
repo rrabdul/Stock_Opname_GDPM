@@ -128,6 +128,12 @@ class StockTakingDetailPage extends Component
         $this->loadDetails();
     }
 
+    public $showConfirmSubmit = false;
+
+    public function confirmSubmit()
+    {
+        $this->showConfirmSubmit = true;
+    }
     public function submitStockTaking()
     {
         $this->header->status = 'Done';
@@ -135,8 +141,8 @@ class StockTakingDetailPage extends Component
         $this->header->save();
 
         session()->flash('message', 'Stock Taking berhasil disubmit.');
+        $this->showConfirmSubmit = false;
     }
-
     public function refreshPage()
     {
         $this->loadDetails();

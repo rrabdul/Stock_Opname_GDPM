@@ -40,9 +40,9 @@
         <div class="modal-dialog">
             <div class="modal-content">
                 <form wire:submit.prevent="submitReturn">
-                    <div class="modal-header bg-warning text-dark">
-                        <h5 class="modal-title">Transaksi Return</h5>
-                        <button type="button" class="btn-close" wire:click="closeModal"></button>
+                    <div class="modal-header" style="background-color: #1f2937;">
+                        <h5 class="modal-title text-white">Transaksi Return</h5>
+                        <button type="button" class="btn-close" wire:click="closeModal" style="filter: invert(1);"></button>
                     </div>
                     <div class="modal-body">
                         <div class="mb-3">
@@ -61,7 +61,7 @@
                             @error('qty_return') <small class="text-danger">{{ $message }}</small> @enderror
                         </div>
                         <div class="mb-3">
-                            <label>Sumber / Supplier</label>
+                            <label>Sumber</label>
                             <input type="text" class="form-control" wire:model="source">
                             @error('source') <small class="text-danger">{{ $message }}</small> @enderror
                         </div>
@@ -73,13 +73,14 @@
                     </div>
                     <div class="modal-footer">
                         <button type="button" wire:click="closeModal" class="btn btn-secondary">Batal</button>
-                        <button type="submit" class="btn btn-warning">Simpan</button>
+                        <button type="submit" class="btn btn-success">Simpan</button> {{-- Ganti dari btn-warning --}}
                     </div>
                 </form>
             </div>
         </div>
     </div>
 @endif
+
 
     {{-- Tabel Riwayat Return --}}
     <div class="card card-body border-0 shadow table-wrapper table-responsive mt-3">

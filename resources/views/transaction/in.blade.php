@@ -40,45 +40,45 @@
     @endif
 
     {{-- Modal Tambah Transaksi --}}
-    @if ($showModal)
-        <div class="modal fade show d-block" tabindex="-1" style="background-color: rgba(0,0,0,0.5)">
-            <div class="modal-dialog">
-                <div class="modal-content">
-                    <form wire:submit.prevent="submitIn">
-                        <div class="modal-header bg-success text-white">
-                            <h5 class="modal-title">Transaksi Masuk</h5>
-                            <button type="button" class="btn-close btn-close-white" wire:click="closeModal"></button>
+@if ($showModal)
+    <div class="modal fade show d-block" tabindex="-1" style="background-color: rgba(0,0,0,0.5)">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <form wire:submit.prevent="submitIn">
+                    <div class="modal-header" style="background-color: #1f2937;">
+                        <h5 class="modal-title text-white">Transaksi Masuk</h5>
+                        <button type="button" class="btn-close" wire:click="closeModal" style="filter: invert(1);"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="mb-3">
+                            <label>Kode Barang</label>
+                            <select wire:model="item_code" class="form-select">
+                                <option value="">-- Pilih Barang --</option>
+                                @foreach($barangs as $barang)
+                                    <option value="{{ $barang->item_code }}">{{ $barang->item_code }} - {{ $barang->item_name }}</option>
+                                @endforeach
+                            </select>
+                            @error('item_code') <small class="text-danger">{{ $message }}</small> @enderror
                         </div>
-                        <div class="modal-body">
-                            <div class="mb-3">
-                                <label>Kode Barang</label>
-                                <select wire:model="item_code" class="form-select">
-                                    <option value="">-- Pilih Barang --</option>
-                                    @foreach($barangs as $barang)
-                                        <option value="{{ $barang->item_code }}">{{ $barang->item_code }} - {{ $barang->item_name }}</option>
-                                    @endforeach
-                                </select>
-                                @error('item_code') <small class="text-danger">{{ $message }}</small> @enderror
-                            </div>
-                            <div class="mb-3">
-                                <label>Jumlah Masuk</label>
-                                <input type="number" class="form-control" wire:model="qty_in">
-                                @error('qty_in') <small class="text-danger">{{ $message }}</small> @enderror
-                            </div>
-                            <div class="mb-3">
-                                <label>Sumber Barang</label>
-                                <input type="text" class="form-control" wire:model="source">
-                            </div>
+                        <div class="mb-3">
+                            <label>Jumlah Masuk</label>
+                            <input type="number" class="form-control" wire:model="qty_in">
+                            @error('qty_in') <small class="text-danger">{{ $message }}</small> @enderror
                         </div>
-                        <div class="modal-footer">
-                            <button type="button" wire:click="closeModal" class="btn btn-secondary">Batal</button>
-                            <button type="submit" class="btn btn-success">Simpan</button>
+                        <div class="mb-3">
+                            <label>Sumber Barang</label>
+                            <input type="text" class="form-control" wire:model="source">
                         </div>
-                    </form>
-                </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" wire:click="closeModal" class="btn btn-secondary">Batal</button>
+                        <button type="submit" class="btn btn-success">Simpan</button>
+                    </div>
+                </form>
             </div>
         </div>
-    @endif
+    </div>
+@endif
 
     {{-- Tabel Riwayat Transaksi --}}
     <div class="card card-body border-0 shadow table-wrapper table-responsive mt-3">

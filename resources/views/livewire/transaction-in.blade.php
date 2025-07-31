@@ -1,3 +1,3 @@
 <div>
-    {{-- In work, do what you enjoy. --}}
+    {{-- Close your eyes. Count to one. That is how long forever feels. --}}
 </div>

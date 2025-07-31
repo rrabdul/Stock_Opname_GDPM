@@ -30,6 +30,11 @@ use App\Http\Livewire\BarangCreate;
 use App\Http\Livewire\TransactionCreate;
 use App\Http\Livewire\TransactionIn;
 use App\Http\Livewire\TransactionOut;
+use App\Http\Livewire\TransactionReturn;
+use App\Http\Livewire\StocktakingGdtp;
+use App\Http\Livewire\StocktakingProduction;
+use App\Http\Livewire\StocktakingIndex;
+use App\Http\Livewire\StockTakingDetailPage;
 
 /*
 |--------------------------------------------------------------------------
@@ -65,6 +70,17 @@ Route::get('/transaction-create', TransactionCreate::class)->name('transaction-c
 //Transaction root
 Route::get('/transaction-in', TransactionIn::class)->name('transaction.in');
 Route::get('/transaction-out', TransactionOut::class)->name('transaction.out');
+Route::get('/transaction/return', TransactionReturn::class)->name('transaction.return');
+
+//Stock Tacking rooot
+Route::get('/stocktaking/gdtp', StocktakingGdtp::class)->name('stocktaking.gdtp');
+Route::get('/stocktaking/production', StocktakingProduction::class)->name('stocktaking.production');
+Route::get('/stocktaking/create', StocktakingIndex::class)->name('stocktaking.create');
+Route::get('/stocktaking/detail', StockTakingDetailPage::class)->name('stocktaking.detail');
+Route::get('/stocktaking/detail/{id}', StockTakingDetailPage::class)->name('stocktaking.detail');
+
+
+
 
 Route::middleware('auth')->group(function () {
     Route::get('/profile', Profile::class)->name('profile');
@@ -89,8 +105,21 @@ Route::middleware('auth')->group(function () {
 });
 
 use App\Exports\BarangExport;
+
 use Maatwebsite\Excel\Facades\Excel;
+use App\Exports\TransactionInExport;
+use Illuminate\Http\Request;
+use App\Http\Controllers\ExportController;
 
 Route::get('/export-barang', function () {
     return Excel::download(new BarangExport, 'data-barang.xlsx');
 });
+
+Route::get('/export-transaction-in', function (Request $request) {
+    $from = $request->query('from', now()->subMonth()->format('Y-m-d'));
+    $to = $request->query('to', now()->format('Y-m-d'));
+
+    return Excel::download(new TransactionInExport($from, $to), 'transaction_in.xlsx');
+});
+
+Route::get('/export-transaction-out', [App\Http\Controllers\ExportController::class, 'exportTransactionOut']);

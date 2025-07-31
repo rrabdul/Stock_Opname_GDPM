@@ -13,6 +13,14 @@
         </div>
     </div>
 
+    {{-- Pencarian Barang --}}
+    <div class="row mb-3">
+        <div class="col-md-3">
+            <label class="form-label small">Cari Barang</label>
+            <input type="text" class="form-control form-control-sm py-1" placeholder="Kode atau Nama Barang..." wire:model.debounce.500ms="searchTerm">
+        </div>
+    </div>
+
     @if (session()->has('message'))
         <div class="alert alert-success mt-2">
             {{ session('message') }}
@@ -40,7 +48,7 @@
                         <td>{{ $barang->Quantity }}</td>
                         <td>{{ $barang->unit }}</td>
                         <td>{{ $barang->Area }}</td>
-                                                <td>{{ \Carbon\Carbon::parse($barang->create_date)->format('d M Y') }}</td>
+                        <td>{{ \Carbon\Carbon::parse($barang->create_date)->format('d M Y') }}</td>
                         <td>
                             <button wire:click="edit({{ $barang->id }})" class="btn btn-sm btn-warning">Edit</button>
                         </td>

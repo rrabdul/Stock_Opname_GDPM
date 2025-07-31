@@ -28,7 +28,7 @@ class TransactionCreate extends Component
         ]);
 
         // Simpan transaksi
-        Transaction::create([
+        TransactionCreate::create([
             'barang_id' => $this->barang_id,
             'quantity' => $this->quantity,
             'keterangan' => $this->keterangan,

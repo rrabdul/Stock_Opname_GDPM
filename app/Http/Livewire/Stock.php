@@ -100,6 +100,15 @@ class Stock extends Component
     }
     }
 
+    public $searchTerm = '';
+
+    public function getBarangsProperty()
+    {
+        return DataBaseBarang::where('item_code', 'like', '%' . $this->searchTerm . '%')
+            ->orWhere('item_name', 'like', '%' . $this->searchTerm . '%')
+            ->get();
+    }
+
 
     public function render()
     {

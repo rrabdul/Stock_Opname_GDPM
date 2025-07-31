@@ -24,7 +24,6 @@ class StockTakingDetailPage extends Component
     public $dateFrom = null;
     public $dateTo = null;
 
-
     // Pencarian daftar barang di tabel
     public $searchItem = '';
 

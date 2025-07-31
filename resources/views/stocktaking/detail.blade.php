@@ -21,7 +21,6 @@
             </div>
             <div>
 
-
             @if ($header->status !== 'Done')
                 <button wire:click="openModal" class="btn btn-primary me-2">
                     <i class="fas fa-plus me-1"></i> Tambah Barang

@@ -24,15 +24,15 @@
 
     <div class="card card-body border-0 shadow table-wrapper table-responsive">
         <table class="table table-hover">
-            <thead>
-                <tr>
-                    <th>Kode Barang</th>
-                    <th>Nama Barang</th>
-                    <th>Stock Sistem</th>
-                    <th>Stock Aktual</th>
-                    <th>Selisih</th>
-                </tr>
-            </thead>
+        <thead>
+            <tr>
+                <th wire:click="sortBy('item_code')" style="cursor:pointer;">Kode Barang</th>
+                <th wire:click="sortBy('item_name')" style="cursor:pointer;">Nama Barang</th>
+                <th wire:click="sortBy('stock_sistem')" style="cursor:pointer;">Stock Sistem</th>
+                <th wire:click="sortBy('stock_aktual')" style="cursor:pointer;">Stock Aktual</th>
+                <th wire:click="sortBy('selisih')" style="cursor:pointer;">Selisih</th>
+            </tr>
+        </thead>
             <tbody>
                 @foreach ($details as $item)
                     <tr>

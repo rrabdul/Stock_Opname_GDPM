@@ -12,32 +12,49 @@ class StockTakingReportDetail extends Component
     public $header;
     public $details;
 
+    // Tambahan untuk sorting
+    public $sortField = 'item_name';
+    public $sortDirection = 'asc';
+
     public function mount($id)
     {
         $this->header = StockTakingHeader::findOrFail($id);
-
-        $this->details = StockTakingDetail::where('stock_taking_header_id', $id)
-            ->where('stock_taking_header_id', $id)
-            ->get()
-            ->map(function ($detail) {
-                $item = DataBaseBarang::where('item_code', $detail->item_code)->first();
-                $stock_sistem = $item?->Quantity ?? 0;
-
-                return [
-                    'item_code' => $detail->item_code,
-                    'item_name' => $item?->item_name ?? '-',
-                    'stock_sistem' => $stock_sistem,
-                    'stock_aktual' => $detail->qty_aktual,
-                    'selisih' => $detail->qty_aktual - $stock_sistem,
-                ];
-            });
+        $this->loadDetails(); // pertama kali load
     }
 
-    public function barang()
+    public function sortBy($field)
     {
-        return $this->belongsTo(DataBaseBarang::class, 'item_code', 'item_code');
+        if ($this->sortField === $field) {
+            $this->sortDirection = $this->sortDirection === 'asc' ? 'desc' : 'asc';
+        } else {
+            $this->sortField = $field;
+            $this->sortDirection = 'asc';
+        }
+
+        $this->loadDetails(); // reload dengan arah sort baru
     }
 
+    public function loadDetails()
+    {
+        $rawDetails = StockTakingDetail::where('stock_taking_header_id', $this->header->id)->get();
+
+        $mapped = $rawDetails->map(function ($detail) {
+            $item = DataBaseBarang::where('item_code', $detail->item_code)->first();
+            $stock_sistem = $item?->Quantity ?? 0;
+
+            return [
+                'item_code' => $detail->item_code,
+                'item_name' => $item?->item_name ?? '-',
+                'stock_sistem' => $stock_sistem,
+                'stock_aktual' => $detail->qty_aktual,
+                'selisih' => $detail->qty_aktual - $stock_sistem,
+            ];
+        });
+
+        $this->details = $mapped->sortBy(function ($item) {
+            return $item[$this->sortField];
+        }, SORT_REGULAR, $this->sortDirection === 'desc')->values();
+    }
 
     public function render()
     {

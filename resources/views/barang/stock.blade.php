@@ -16,8 +16,7 @@
     {{-- Pencarian Barang --}}
     <div class="row mb-3">
         <div class="col-md-3">
-            <label class="form-label small">Cari Barang</label>
-            <input type="text" class="form-control form-control-sm py-1" placeholder="Kode atau Nama Barang..." wire:model.debounce.500ms="searchTerm">
+            <input type="text" class="form-control form-control-sm py-1" placeholder="Search for Items..." wire:model.debounce.500ms="searchTerm">
         </div>
     </div>
 

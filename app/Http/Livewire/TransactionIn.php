@@ -9,7 +9,7 @@ use Illuminate\Support\Facades\Auth;
 
 class TransactionIn extends Component
 {
-    public $barangs, $item_code, $item_name, $qty_in, $source, $showModal = false;
+    public $barangs, $item_code, $item_name, $unit, $qty_in, $source, $showModal = false;
     public $history;
     public $searchTerm = '';
     public $searchResults = [];
@@ -17,6 +17,8 @@ class TransactionIn extends Component
     public $dateFrom;
     public $dateTo;
 
+    public $tempItems = []; // List barang sementara sebelum submit
+    public $showConfirmSubmit = false; // Untuk modal konfirmasi submit
 
     public function mount()
     {
@@ -31,7 +33,7 @@ class TransactionIn extends Component
         if ($this->searchRiwayat) {
             $query->where(function ($q) {
                 $q->where('item_code', 'like', '%' . $this->searchRiwayat . '%')
-                ->orWhere('item_name', 'like', '%' . $this->searchRiwayat . '%');
+                    ->orWhere('item_name', 'like', '%' . $this->searchRiwayat . '%');
             });
         }
 
@@ -45,23 +47,25 @@ class TransactionIn extends Component
         $this->history = $query->latest()->get();
     }
 
-
-
     public function openModal()
     {
         $this->resetInput();
+        $this->tempItems = [];
         $this->showModal = true;
+        $this->showConfirmSubmit = false;
     }
 
     public function closeModal()
     {
         $this->showModal = false;
+        $this->showConfirmSubmit = false;
     }
 
     public function resetInput()
     {
         $this->item_code = '';
         $this->item_name = '';
+        $this->unit = '';
         $this->qty_in = '';
         $this->source = '';
         $this->searchTerm = '';
@@ -86,50 +90,92 @@ class TransactionIn extends Component
         if ($barang) {
             $this->item_code = $barang->item_code;
             $this->item_name = $barang->item_name;
+            $this->unit = $barang->unit;
             $this->searchTerm = '';
             $this->searchResults = [];
         }
     }
 
-    public function submitIn()
+    public function updatedItemCode($value)
+    {
+        $barang = DataBaseBarang::where('item_code', $value)->first();
+        if ($barang) {
+            $this->item_name = $barang->item_name;
+            $this->unit = $barang->unit;
+        } else {
+            $this->item_name = '';
+            $this->unit = '';
+        }
+    }
+
+    public function addItemToList()
     {
         $this->validate([
             'item_code' => 'required',
             'qty_in' => 'required|numeric|min:1',
         ]);
 
+        foreach ($this->tempItems as $item) {
+            if ($item['item_code'] === $this->item_code) {
+                session()->flash('message', 'Barang sudah ada di daftar.');
+                return;
+            }
+        }
+
         $barang = DataBaseBarang::where('item_code', $this->item_code)->first();
 
-        if ($barang) {
-            // Tambahkan qty ke data barang
-            $barang->Quantity += $this->qty_in;
-            $barang->save();
-
-            // Pastikan item_name diambil dari database
-            $this->item_name = $barang->item_name;
-
-            // Simpan transaksi
-            TransactionInModel::create([
-                'item_code' => $this->item_code,
-                'item_name' => $this->item_name,
-                'qty_in' => $this->qty_in,
-                'source' => $this->source,
-                'user_name' => Auth::user()?->name ?? 'Unknown',
-            ]);
-
-            session()->flash('message', 'Stok berhasil ditambahkan.');
-            $this->resetInput();
-            $this->loadHistory();
-            $this->closeModal();
-        } else {
+        if (!$barang) {
             session()->flash('message', 'Barang tidak ditemukan.');
+            return;
         }
+
+        $this->tempItems[] = [
+            'item_code' => $barang->item_code,
+            'item_name' => $barang->item_name,
+            'unit' => $barang->unit,
+            'qty_in' => $this->qty_in,
+        ];
+
+        $this->resetInput();
     }
 
-
-    public function render()
+    public function removeItem($index)
     {
-        return view('transaction.in');
+        unset($this->tempItems[$index]);
+        $this->tempItems = array_values($this->tempItems); // re-index array
+    }
+
+    public function submitTransactionIn()
+    {
+        if (count($this->tempItems) === 0) {
+            session()->flash('message', 'Tidak ada barang yang ditambahkan.');
+            return;
+        }
+
+        foreach ($this->tempItems as $item) {
+            $barang = DataBaseBarang::where('item_code', $item['item_code'])->first();
+
+            if ($barang) {
+                $barang->Quantity += $item['qty_in'];
+                $barang->save();
+
+                TransactionInModel::create([
+                    'item_code' => $item['item_code'],
+                    'item_name' => $item['item_name'],
+                    'unit' => strtoupper($item['unit']),
+                    'qty_in' => $item['qty_in'],
+                    'source' => strtoupper($this->source),
+                    'user_name' => strtoupper(Auth::user()?->name ?? 'Unknown'),
+                ]);
+            }
+        }
+
+        session()->flash('message', 'Transaksi IN berhasil disimpan.');
+        $this->resetInput();
+        $this->tempItems = [];
+        $this->showConfirmSubmit = false;
+        $this->loadHistory();
+        $this->closeModal();
     }
 
     public function updatedSearchRiwayat()
@@ -147,4 +193,8 @@ class TransactionIn extends Component
         $this->loadHistory();
     }
 
+    public function render()
+    {
+        return view('transaction.in');
+    }
 }

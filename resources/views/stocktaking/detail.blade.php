@@ -25,7 +25,7 @@
                     <i class="fas fa-plus me-1"></i> Tambah Barang
                 </button>
                 <button wire:click="confirmSubmit" class="btn btn-success">
-                    <i class="fas fa-check me-1"></i> Submit Stock Taking
+                    <i class="fas fa-check me-1"></i> Submit Stock Opname
                 </button>
             @endif
         </div>
@@ -33,15 +33,12 @@
 
     <div class="row mb-3 align-items-end">
         <div class="col-md-3">
-            <label class="form-label small">Cari Judul</label>
-            <input type="text" class="form-control form-control-sm py-1" placeholder="Judul atau Area..." wire:model.debounce.500ms="searchTitle">
+            <input type="text" class="form-control form-control-sm py-1" placeholder="Search fo Items..." wire:model.debounce.500ms="searchTitle">
         </div>
         <div class="col-md-2">
-            <label class="form-label small">Dari Tanggal</label>
             <input type="date" class="form-control form-control-sm py-1" wire:model="dateFrom">
         </div>
         <div class="col-md-2">
-            <label class="form-label small">Sampai Tanggal</label>
             <input type="date" class="form-control form-control-sm py-1" wire:model="dateTo">
         </div>
     </div>
@@ -102,12 +99,12 @@
         <table class="table table-hover">
             <thead>
                 <tr>
-                    <th>Kode</th>
-                    <th>Nama Barang</th>
-                    <th>Qty Aktual</th>
+                    <th>Item Code</th>
+                    <th>Item Name</th>
+                    <th>Actual Qty</th>
                     <th>User</th>
                     <th>Update</th>
-                    <th>Aksi</th>
+                    <th>Action</th>
                 </tr>
             </thead>
             <tbody>
@@ -143,7 +140,7 @@
                         <button type="button" class="btn-close" wire:click="$set('showConfirmSubmit', false)" style="filter: invert(1);"></button>
                     </div>
                     <div class="modal-body">
-                        <p>Apakah kamu yakin ingin <strong>submit</strong> stock taking ini? Setelah disubmit, data tidak bisa diubah.</p>
+                        <p>Apakah kamu yakin ingin <strong>submit</strong> stock opname ini? Setelah disubmit, data tidak bisa diubah.</p>
                     </div>
                     <div class="modal-footer">
                         <button class="btn btn-secondary" wire:click="$set('showConfirmSubmit', false)">Batal</button>

@@ -1,7 +1,18 @@
 <div>
     <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center py-4">
         <div class="d-block mb-4 mb-md-0">
-            <h2 class="h4">Stock Taking Report</h2>
+            <h2 class="h4">Stock Opname Report</h2>
+        </div>
+    </div>
+    <div class="row mb-3">
+        <div class="col-md-4">
+            <input type="text" class="form-control" placeholder="Search Title or Area..." wire:model.debounce.500ms="searchTerm">
+        </div>
+        <div class="col-md-2">
+            <input type="date" class="form-control" wire:model="dateFrom">
+        </div>
+        <div class="col-md-2">
+            <input type="date" class="form-control" wire:model="dateTo">
         </div>
     </div>
 
@@ -15,11 +26,12 @@
         <table class="table table-hover">
             <thead>
                 <tr>
-                    <th>Judul</th>
+                    <th>Stock Opname Name</th>
                     <th>Area</th>
-                    <th>Tanggal</th>
+                    <th>Date</th>
                     <th>Status</th>
-                    <th>Detail</th>
+                    <th>Submit By</th> {{-- Kolom tambahan --}}
+                    <th>Action</th>
                 </tr>
             </thead>
             <tbody>
@@ -29,9 +41,10 @@
                         <td>{{ $report->area }}</td>
                         <td>{{ \Carbon\Carbon::parse($report->created_at)->format('d M Y') }}</td>
                         <td><span class="badge bg-success">{{ $report->status }}</span></td>
+                        <td>{{ $report->submitted_by ?? '-' }}</td> {{-- Tampilkan submit by --}}
                         <td>
                             <a href="{{ route('stocktaking.reportdetail', $report->id) }}" class="btn btn-sm btn-primary">
-                                Lihat Detail
+                                View Detail
                             </a>
                         </td>
                     </tr>

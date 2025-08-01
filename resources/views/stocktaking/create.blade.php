@@ -1,11 +1,11 @@
 <div>
     <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center py-4">
         <div class="d-block mb-2 mb-md-0">
-            <h2 class="h4">Create Stock Taking</h2>
+            <h2 class="h4">Create Stock Opname</h2>
         </div>
         <div class="btn-toolbar mb-2 mb-md-0">
             <button wire:click="openModal" class="btn btn-primary">
-                <i class="fas fa-plus me-1"></i> Create Stock Taking
+                <i class="fas fa-plus me-1"></i> Create Stock Opname
             </button>
         </div>
     </div>
@@ -13,15 +13,12 @@
     {{-- Filter --}}
     <div class="row mb-3 align-items-end">
         <div class="col-md-3">
-            <label class="form-label small">Cari Judul</label>
-            <input type="text" class="form-control form-control-sm py-1" placeholder="Judul atau Area..." wire:model.debounce.500ms="searchTitle">
+            <input type="text" class="form-control form-control-sm py-1" placeholder="Search Title or Area" wire:model.debounce.500ms="searchTitle">
         </div>
         <div class="col-md-2">
-            <label class="form-label small">Dari Tanggal</label>
             <input type="date" class="form-control form-control-sm py-1" wire:model="dateFrom">
         </div>
         <div class="col-md-2">
-            <label class="form-label small">Sampai Tanggal</label>
             <input type="date" class="form-control form-control-sm py-1" wire:model="dateTo">
         </div>
     </div>
@@ -44,7 +41,7 @@
                     </div>
                     <div class="modal-body">
                         <div class="mb-3">
-                            <label class="form-label">Judul Stock Taking</label>
+                            <label class="form-label">Stock Taking Title</label>
                             <input type="text" class="form-control" wire:model="title" required style="text-transform: uppercase;">
                         </div>
                         <div class="mb-3">
@@ -64,15 +61,15 @@
 
     {{-- Tabel Stock Taking --}}
     <div class="card card-body border-0 shadow table-wrapper table-responsive mt-3">
-        <h5>Daftar Stock Taking</h5>
+        <h5>Daftar Stock Opname</h5>
         <table class="table table-hover">
             <thead>
                 <tr>
-                    <th>Judul</th>
+                    <th>Stock Opname Name</th>
                     <th>Area</th>
                     <th>Status</th>
                     <th>User</th>
-                    <th>Tanggal Buat</th>
+                    <th>Create Date</th>
                 </tr>
             </thead>
             <tbody>

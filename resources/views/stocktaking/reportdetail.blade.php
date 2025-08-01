@@ -8,7 +8,7 @@
                 <td>{{ $header->area }}</td>
             </tr>
             <tr>
-                <td class="pe-2"><strong>Tanggal</strong></td>
+                <td class="pe-2"><strong>Date</strong></td>
                 <td class="pe-2">:</td>
                 <td>{{ \Carbon\Carbon::parse($header->created_at)->format('d M Y') }}</td>
             </tr>
@@ -26,11 +26,11 @@
         <table class="table table-hover">
         <thead>
             <tr>
-                <th wire:click="sortBy('item_code')" style="cursor:pointer;">Kode Barang</th>
-                <th wire:click="sortBy('item_name')" style="cursor:pointer;">Nama Barang</th>
-                <th wire:click="sortBy('stock_sistem')" style="cursor:pointer;">Stock Sistem</th>
-                <th wire:click="sortBy('stock_aktual')" style="cursor:pointer;">Stock Aktual</th>
-                <th wire:click="sortBy('selisih')" style="cursor:pointer;">Selisih</th>
+                <th wire:click="sortBy('item_code')" style="cursor:pointer;">Item Code</th>
+                <th wire:click="sortBy('item_name')" style="cursor:pointer;">Item Name</th>
+                <th wire:click="sortBy('stock_sistem')" style="cursor:pointer;">Stock System</th>
+                <th wire:click="sortBy('stock_aktual')" style="cursor:pointer;">Actual Stock</th>
+                <th wire:click="sortBy('selisih')" style="cursor:pointer;">Different</th>
             </tr>
         </thead>
             <tbody>

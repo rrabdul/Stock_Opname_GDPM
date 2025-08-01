@@ -137,12 +137,14 @@ class StockTakingDetailPage extends Component
     public function submitStockTaking()
     {
         $this->header->status = 'Done';
-        $this->header->submitted_by = Auth::check() ? Auth::user()->name : 'Guest';
+        $this->header->submitted_by = Auth::user()?->name ?? 'Unknown';
         $this->header->save();
 
-        session()->flash('message', 'Stock Taking berhasil disubmit.');
-        $this->showConfirmSubmit = false;
+        session()->flash('message', 'Stock Opname berhasil disubmit.');
+
+        return redirect()->route('stocktaking.detail', ['id' => $this->header->id]);
     }
+
     public function refreshPage()
     {
         $this->loadDetails();

@@ -15,15 +15,12 @@
 
     <div class="row mb-2 align-items-end">
         <div class="col-md-2">
-            <label class="form-label small">Cari Barang</label>
-            <input type="text" class="form-control form-control-sm py-1" placeholder="Kode atau Nama Barang..." wire:model.debounce.500ms="searchRiwayat">
+            <input type="text" class="form-control form-control-sm py-1" placeholder="Search for Items..." wire:model.debounce.500ms="searchRiwayat">
         </div>
         <div class="col-md-2">
-            <label class="form-label small">Dari Tanggal</label>
             <input type="date" class="form-control form-control-sm py-1" wire:model="dateFrom">
         </div>
         <div class="col-md-2">
-            <label class="form-label small">Sampai Tanggal</label>
             <input type="date" class="form-control form-control-sm py-1" wire:model="dateTo">
         </div>
     </div>
@@ -67,7 +64,7 @@
                         </div>
                         <div class="mb-3">
                             <label>Keterangan <span class="text-danger">*</span></label>
-                            <textarea class="form-control" wire:model="keterangan" rows="2" placeholder="Wajib diisi, contoh: rusak, tidak sesuai PO, dll"></textarea>
+                            <textarea class="form-control" wire:model="keterangan" rows="2" placeholder="Wajib diisi, contoh: riject "></textarea>
                             @error('keterangan') <small class="text-danger">{{ $message }}</small> @enderror
                         </div>
                     </div>

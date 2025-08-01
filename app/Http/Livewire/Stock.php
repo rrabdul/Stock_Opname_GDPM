@@ -12,15 +12,24 @@ class Stock extends Component
     public $barangs;
     public $showModal = false;
     public $isEditMode = false;
+    public $searchTerm = ''; // pencarian
 
     public function mount()
     {
         $this->loadBarangs();
     }
 
+    public function updatedSearchTerm()
+    {
+        $this->loadBarangs();
+    }
+
     public function loadBarangs()
     {
-        $this->barangs = DataBaseBarang::all();
+        $this->barangs = DataBaseBarang::when($this->searchTerm, function ($query) {
+            $query->where('item_code', 'like', '%' . $this->searchTerm . '%')
+                  ->orWhere('item_name', 'like', '%' . $this->searchTerm . '%');
+        })->get();
     }
 
     public function openModal()
@@ -62,53 +71,41 @@ class Stock extends Component
 
     public function save()
     {
-    $this->validate([
-        'item_code' => 'required|digits:10|unique:data_base_barang,item_code,' . $this->barangId,
-        'item_name' => 'required',
-        'Quantity' => 'numeric',
-        'create_date' => 'required|date',
-    ]);
+        $this->validate([
+            'item_code' => 'required|digits:10|unique:data_base_barang,item_code,' . $this->barangId,
+            'item_name' => 'required',
+            'Quantity' => 'numeric',
+            'create_date' => 'required|date',
+        ]);
 
-    // ubah jadi kapital semua sebelum simpan
-    $this->item_name = strtoupper($this->item_name);
+        $this->item_name = strtoupper($this->item_name);
 
-    DataBaseBarang::updateOrCreate(
-        ['id' => $this->barangId],
-        [
-            'item_code' => $this->item_code,
-            'item_name' => $this->item_name,
-            'Quantity' => $this->Quantity,
-            'unit' => $this->unit,
-            'Area' => $this->Area,
-            'create_date' => $this->create_date,
-        ]
-    );
+        DataBaseBarang::updateOrCreate(
+            ['id' => $this->barangId],
+            [
+                'item_code' => $this->item_code,
+                'item_name' => $this->item_name,
+                'Quantity' => $this->Quantity,
+                'unit' => $this->unit,
+                'Area' => $this->Area,
+                'create_date' => $this->create_date,
+            ]
+        );
 
-    session()->flash('message', $this->isEditMode ? 'Data berhasil diupdate.' : 'Data berhasil disimpan.');
-    $this->closeModal();
-    $this->loadBarangs();
-    }
-
-
-    public function delete()
-    {
-    if ($this->barangId) {
-        DataBaseBarang::find($this->barangId)->delete();
-        session()->flash('message', 'Data berhasil dihapus.');
+        session()->flash('message', $this->isEditMode ? 'Data berhasil diupdate.' : 'Data berhasil disimpan.');
         $this->closeModal();
         $this->loadBarangs();
     }
-    }
 
-    public $searchTerm = '';
-
-    public function getBarangsProperty()
+    public function delete()
     {
-        return DataBaseBarang::where('item_code', 'like', '%' . $this->searchTerm . '%')
-            ->orWhere('item_name', 'like', '%' . $this->searchTerm . '%')
-            ->get();
+        if ($this->barangId) {
+            DataBaseBarang::find($this->barangId)->delete();
+            session()->flash('message', 'Data berhasil dihapus.');
+            $this->closeModal();
+            $this->loadBarangs();
+        }
     }
-
 
     public function render()
     {

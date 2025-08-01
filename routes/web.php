@@ -38,6 +38,7 @@ use App\Http\Livewire\StocktakingIndex;
 use App\Http\Livewire\StockTakingDetailPage;
 use App\Http\Livewire\StockTakingReport as StockTakingReportPage;
 use App\Http\Livewire\StockTakingReportDetail;
+use App\Http\Livewire\TransactionReport;
 
 
 /*
@@ -75,6 +76,8 @@ Route::get('/transaction-create', TransactionCreate::class)->name('transaction-c
 Route::get('/transaction-in', TransactionIn::class)->name('transaction.in');
 Route::get('/transaction-out', TransactionOut::class)->name('transaction.out');
 Route::get('/transaction/return', TransactionReturn::class)->name('transaction.return');
+Route::get('/transaction/report', TransactionReport::class)->name('transaction.report');
+
 
 //Stock Tacking rooot
 Route::get('/stocktaking/gdtp', StocktakingGdtp::class)->name('stocktaking.gdtp');

@@ -59,9 +59,9 @@ class TransactionReturn extends Component
             'item_name' => $barang->item_name,
             'qty_return' => $this->qty_return,
             'unit' => $barang->unit,
-            'source' => $this->source,
-            'keterangan' => $this->keterangan,
-            'user' => Auth::user()->name ?? 'User',
+            'source' => strtoupper ($this->source),
+            'keterangan' => strtoupper ($this->keterangan),
+            'user' => strtoupper (Auth::user()->name ?? 'User'),
         ]);
 
         // Kurangi stok

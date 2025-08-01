@@ -7,7 +7,7 @@
         'dashboard', 'profile', 'profile-example', 'users', 'bootstrap-tables', 'transactions',
         'buttons','forms', 'modals', 'notifications', 'typography', 'upgrade-to-pro',
         'stock.index','transaction-create.', 'transaction.in', 'transaction.out',
-        'stocktaking.gdtp','stocktaking.production','transaction.return',
+        'stocktaking.gdtp','stocktaking.production','transaction.return','transaction.report',
         'stocktaking.create','stocktaking.detail','stocktaking.report','stocktaking.reportdetail',
     ]))
         {{-- Nav --}}

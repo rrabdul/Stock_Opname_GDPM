@@ -9,15 +9,17 @@ use Illuminate\Support\Facades\Auth;
 
 class TransactionOut extends Component
 {
-    public $barangs, $item_code, $item_name, $qty_out, $destination;
+    public $barangs;
+    public $item_code, $item_name, $qty_out, $destination, $unit;
     public $showModal = false;
-    public $history;
-    public $searchTerm = '';
+    public $showConfirmSubmit = false;
+    public $tempItems = [];
+    public $history = [];
+
+    public $searchQuery = '';
     public $searchResults = [];
     public $searchRiwayat = '';
     public $dateFrom, $dateTo;
-    public $showConfirmSubmit = false;
-    public $tempItems = [];
 
     protected $listeners = ['konfirmasiSubmit' => 'submitOut'];
 
@@ -27,30 +29,15 @@ class TransactionOut extends Component
         $this->loadHistory();
     }
 
-    public function loadHistory()
+    public function render()
     {
-        $query = TransactionOutModel::query();
-
-        if ($this->searchRiwayat) {
-            $query->where(function ($q) {
-                $q->where('item_code', 'like', '%' . $this->searchRiwayat . '%')
-                  ->orWhere('item_name', 'like', '%' . $this->searchRiwayat . '%');
-            });
-        }
-
-        if ($this->dateFrom && $this->dateTo) {
-            $query->whereBetween('created_at', [
-                $this->dateFrom . ' 00:00:00',
-                $this->dateTo . ' 23:59:59'
-            ]);
-        }
-
-        $this->history = $query->latest()->get();
+        return view('transaction.out');
     }
 
     public function openModal()
     {
         $this->resetInput();
+        $this->tempItems = [];
         $this->showModal = true;
         $this->showConfirmSubmit = false;
     }
@@ -66,30 +53,33 @@ class TransactionOut extends Component
         $this->item_code = '';
         $this->item_name = '';
         $this->qty_out = '';
-        $this->destination = ''; // reset ini hanya saat open modal
-        $this->searchTerm = '';
+        $this->unit = '';
+        $this->destination = '';
+        $this->searchQuery = '';
         $this->searchResults = [];
-        $this->tempItems = [];
     }
 
-    public function updatedSearchTerm()
+    public function updatedSearchQuery()
     {
-        $term = trim($this->searchTerm);
-        $this->searchResults = strlen($term) > 1
-            ? DataBaseBarang::where('item_code', 'like', "%$term%")
-                ->orWhere('item_name', 'like', "%$term%")
+        if (strlen($this->searchQuery) >= 2) {
+            $this->searchResults = DataBaseBarang::where('item_code', 'like', '%' . $this->searchQuery . '%')
+                ->orWhere('item_name', 'like', '%' . $this->searchQuery . '%')
                 ->limit(10)
-                ->get()
-            : [];
+                ->get();
+        } else {
+            $this->searchResults = [];
+        }
     }
 
     public function selectItem($itemCode)
     {
         $barang = DataBaseBarang::where('item_code', $itemCode)->first();
+
         if ($barang) {
             $this->item_code = $barang->item_code;
             $this->item_name = $barang->item_name;
-            $this->searchTerm = '';
+            $this->unit = $barang->unit;
+            $this->searchQuery = $barang->item_code . ' - ' . $barang->item_name;
             $this->searchResults = [];
         }
     }
@@ -98,6 +88,7 @@ class TransactionOut extends Component
     {
         $barang = DataBaseBarang::where('item_code', $value)->first();
         $this->item_name = $barang->item_name ?? '';
+        $this->unit = $barang->unit ?? '';
     }
 
     public function addItemToList()
@@ -121,7 +112,7 @@ class TransactionOut extends Component
         }
 
         if ($barang->Quantity < $this->qty_out) {
-            session()->flash('message', 'Stok tidak cukup. Stok tersedia: ' . $barang->Quantity);
+            session()->flash('message', 'Stok tidak cukup. Tersedia: ' . $barang->Quantity);
             return;
         }
 
@@ -132,7 +123,7 @@ class TransactionOut extends Component
             'unit' => $barang->unit,
         ];
 
-        $this->reset(['item_code', 'item_name', 'qty_out']);
+        $this->reset(['item_code', 'item_name', 'qty_out', 'unit', 'searchQuery', 'searchResults']);
     }
 
     public function removeItem($index)
@@ -143,7 +134,6 @@ class TransactionOut extends Component
 
     public function submitOut()
     {
-        // Validasi tujuan hanya sekali di awal
         $this->validate([
             'destination' => 'required|string|max:255',
         ]);
@@ -169,23 +159,40 @@ class TransactionOut extends Component
                 'item_name' => $item['item_name'],
                 'qty_out' => $item['qty_out'],
                 'unit' => $item['unit'],
-                'destination' => strtoupper ($this->destination),
+                'destination' => strtoupper($this->destination),
                 'user' => strtoupper(Auth::user()?->name ?? 'Unknown'),
             ]);
         }
 
         session()->flash('message', 'Transaksi berhasil disimpan.');
         $this->resetInput();
+        $this->tempItems = [];
         $this->loadHistory();
         $this->closeModal();
+    }
+
+    public function loadHistory()
+    {
+        $query = TransactionOutModel::query();
+
+        if ($this->searchRiwayat) {
+            $query->where(function ($q) {
+                $q->where('item_code', 'like', '%' . $this->searchRiwayat . '%')
+                    ->orWhere('item_name', 'like', '%' . $this->searchRiwayat . '%');
+            });
+        }
+
+        if ($this->dateFrom && $this->dateTo) {
+            $query->whereBetween('created_at', [
+                $this->dateFrom . ' 00:00:00',
+                $this->dateTo . ' 23:59:59'
+            ]);
+        }
+
+        $this->history = $query->latest()->get();
     }
 
     public function updatedSearchRiwayat() { $this->loadHistory(); }
     public function updatedDateFrom() { $this->loadHistory(); }
     public function updatedDateTo() { $this->loadHistory(); }
-
-    public function render()
-    {
-        return view('transaction.out');
-    }
 }

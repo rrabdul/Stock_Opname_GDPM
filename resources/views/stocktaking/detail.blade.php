@@ -62,14 +62,24 @@
                     <div class="modal-body">
                         <div class="mb-3">
                             <label>Kode Barang</label>
-                            <select wire:model="item_code" class="form-select">
-                                <option value="">-- Pilih Barang --</option>
-                                @foreach ($barangs as $barang)
-                                    <option value="{{ $barang->item_code }}">
-                                        {{ $barang->item_code }} - {{ $barang->item_name }}
-                                    </option>
-                                @endforeach
-                            </select>
+                            <div class="mb-3" wire:click.away="$set('searchResults', [])">
+                            <label>Kode / Nama Barang</label>
+                            <input type="text" class="form-control" wire:model.debounce.300ms="searchQuery" placeholder="Ketik kode atau nama barang...">
+
+                            @if(!empty($searchResults))
+                                <ul class="list-group mt-1" style="max-height: 150px; overflow-y:auto; position: absolute; z-index: 1051;">
+                                    @foreach($searchResults as $result)
+                                        <li class="list-group-item list-group-item-action"
+                                            wire:click="selectItem('{{ $result->item_code }}')">
+                                            {{ $result->item_code }} - {{ $result->item_name }}
+                                        </li>
+                                    @endforeach
+                                </ul>
+                            @endif
+
+                            @error('item_code') <small class="text-danger">{{ $message }}</small> @enderror
+                    </div>
+
                             @error('item_code') <small class="text-danger">{{ $message }}</small> @enderror
                         </div>
 

@@ -9,16 +9,19 @@ use Illuminate\Support\Facades\Auth;
 
 class TransactionIn extends Component
 {
-    public $barangs, $item_code, $item_name, $unit, $qty_in, $source, $showModal = false;
+    public $barangs, $item_code, $item_name, $unit, $qty_in, $source;
+    public $showModal = false;
+    public $showConfirmSubmit = false;
+
     public $history;
-    public $searchTerm = '';
+    public $searchQuery = ''; // untuk pencarian barang saat input
     public $searchResults = [];
+
     public $searchRiwayat = '';
     public $dateFrom;
     public $dateTo;
 
     public $tempItems = []; // List barang sementara sebelum submit
-    public $showConfirmSubmit = false; // Untuk modal konfirmasi submit
 
     public function mount()
     {
@@ -26,25 +29,9 @@ class TransactionIn extends Component
         $this->loadHistory();
     }
 
-    public function loadHistory()
+    public function render()
     {
-        $query = TransactionInModel::query();
-
-        if ($this->searchRiwayat) {
-            $query->where(function ($q) {
-                $q->where('item_code', 'like', '%' . $this->searchRiwayat . '%')
-                    ->orWhere('item_name', 'like', '%' . $this->searchRiwayat . '%');
-            });
-        }
-
-        if ($this->dateFrom && $this->dateTo) {
-            $from = $this->dateFrom . ' 00:00:00';
-            $to = $this->dateTo . ' 23:59:59';
-
-            $query->whereBetween('created_at', [$from, $to]);
-        }
-
-        $this->history = $query->latest()->get();
+        return view('transaction.in');
     }
 
     public function openModal()
@@ -68,15 +55,15 @@ class TransactionIn extends Component
         $this->unit = '';
         $this->qty_in = '';
         $this->source = '';
-        $this->searchTerm = '';
+        $this->searchQuery = '';
         $this->searchResults = [];
     }
 
-    public function updatedSearchTerm()
+    public function updatedSearchQuery()
     {
-        if (strlen($this->searchTerm) > 1) {
-            $this->searchResults = DataBaseBarang::where('item_code', 'like', '%' . $this->searchTerm . '%')
-                ->orWhere('item_name', 'like', '%' . $this->searchTerm . '%')
+        if (strlen($this->searchQuery) >= 2) {
+            $this->searchResults = DataBaseBarang::where('item_code', 'like', '%' . $this->searchQuery . '%')
+                ->orWhere('item_name', 'like', '%' . $this->searchQuery . '%')
                 ->limit(10)
                 ->get();
         } else {
@@ -91,7 +78,7 @@ class TransactionIn extends Component
             $this->item_code = $barang->item_code;
             $this->item_name = $barang->item_name;
             $this->unit = $barang->unit;
-            $this->searchTerm = '';
+            $this->searchQuery = $barang->item_code . ' - ' . $barang->item_name;
             $this->searchResults = [];
         }
     }
@@ -115,6 +102,7 @@ class TransactionIn extends Component
             'qty_in' => 'required|numeric|min:1',
         ]);
 
+        // Cek duplikat
         foreach ($this->tempItems as $item) {
             if ($item['item_code'] === $this->item_code) {
                 session()->flash('message', 'Barang sudah ada di daftar.');
@@ -178,6 +166,27 @@ class TransactionIn extends Component
         $this->closeModal();
     }
 
+    public function loadHistory()
+    {
+        $query = TransactionInModel::query();
+
+        if ($this->searchRiwayat) {
+            $query->where(function ($q) {
+                $q->where('item_code', 'like', '%' . $this->searchRiwayat . '%')
+                    ->orWhere('item_name', 'like', '%' . $this->searchRiwayat . '%');
+            });
+        }
+
+        if ($this->dateFrom && $this->dateTo) {
+            $from = $this->dateFrom . ' 00:00:00';
+            $to = $this->dateTo . ' 23:59:59';
+
+            $query->whereBetween('created_at', [$from, $to]);
+        }
+
+        $this->history = $query->latest()->get();
+    }
+
     public function updatedSearchRiwayat()
     {
         $this->loadHistory();
@@ -191,10 +200,5 @@ class TransactionIn extends Component
     public function updatedDateTo()
     {
         $this->loadHistory();
-    }
-
-    public function render()
-    {
-        return view('transaction.in');
     }
 }

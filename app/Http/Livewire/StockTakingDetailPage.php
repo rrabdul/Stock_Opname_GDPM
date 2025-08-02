@@ -27,6 +27,8 @@ class StockTakingDetailPage extends Component
     // Pencarian daftar barang di tabel
     public $searchItem = '';
 
+    public $showConfirmSubmit = false;
+
     public function mount($id)
     {
         $this->header = StockTakingHeader::findOrFail($id);
@@ -105,6 +107,19 @@ class StockTakingDetailPage extends Component
             'qty_aktual' => 'required|integer|min:0',
         ]);
 
+        // Cek apakah item sudah ada sebelumnya (kecuali kalau sedang edit)
+        if (!$this->editingId) {
+            $exists = StockTakingDetail::where('stock_taking_header_id', $this->header->id)
+                ->where('item_code', $this->item_code)
+                ->exists();
+
+            if ($exists) {
+                $this->closeModal(); // ⬅️ Tutup modal sebelum return
+                session()->flash('message', 'Barang ini sudah ada. Tidak boleh input ganda.');
+                return;
+            }
+        }
+
         if ($this->editingId) {
             $detail = StockTakingDetail::findOrFail($this->editingId);
             $detail->update([
@@ -128,12 +143,13 @@ class StockTakingDetailPage extends Component
         $this->loadDetails();
     }
 
-    public $showConfirmSubmit = false;
+
 
     public function confirmSubmit()
     {
         $this->showConfirmSubmit = true;
     }
+
     public function submitStockTaking()
     {
         $this->header->status = 'Done';
@@ -150,6 +166,31 @@ class StockTakingDetailPage extends Component
         $this->loadDetails();
     }
 
+    public $searchQuery = '';
+    public $searchResults = [];
+
+    public function updatedSearchQuery()
+    {
+        if (strlen($this->searchQuery) >= 2) {
+            $this->searchResults = DataBaseBarang::where('item_code', 'like', '%' . $this->searchQuery . '%')
+                ->orWhere('item_name', 'like', '%' . $this->searchQuery . '%')
+                ->limit(10)
+                ->get();
+        } else {
+            $this->searchResults = [];
+        }
+    }
+
+    public function selectItem($itemCode)
+    {
+        $barang = DataBaseBarang::where('item_code', $itemCode)->first();
+        if ($barang) {
+            $this->item_code = $barang->item_code;
+            $this->item_name = $barang->item_name;
+            $this->searchQuery = $barang->item_code . ' - ' . $barang->item_name;
+            $this->searchResults = [];
+        }
+    }
 
 
 }

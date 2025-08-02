@@ -46,16 +46,24 @@
                         <button type="button" class="btn-close" wire:click="closeModal" style="filter: invert(1);"></button>
                     </div>
                     <div class="modal-body">
-                        <div class="mb-3">
-                            <label>Kode Barang</label>
-                            <select wire:model="item_code" class="form-select">
-                                <option value="">-- Pilih Barang --</option>
-                                @foreach($barangs as $barang)
-                                    <option value="{{ $barang->item_code }}">{{ $barang->item_code }} - {{ $barang->item_name }}</option>
+                    <div class="mb-3 position-relative" wire:click.away="$set('searchResults', [])">
+                        <label>Kode / Nama Barang</label>
+                        <input type="text" class="form-control" wire:model.debounce.300ms="searchQuery" placeholder="Ketik kode/nama barang...">
+
+                        @if (!empty($searchResults))
+                            <ul class="list-group mt-1 position-absolute w-100" style="max-height: 200px; overflow-y: auto; z-index: 2000;">
+                                @foreach ($searchResults as $result)
+                                    <li class="list-group-item list-group-item-action"
+                                        wire:click="selectItem('{{ $result->item_code }}')">
+                                        {{ $result->item_code }} - {{ $result->item_name }}
+                                    </li>
                                 @endforeach
-                            </select>
-                            @error('item_code') <small class="text-danger">{{ $message }}</small> @enderror
-                        </div>
+                            </ul>
+                        @endif
+
+                        @error('item_code') <small class="text-danger">{{ $message }}</small> @enderror
+                    </div>
+
                         <div class="mb-3">
                             <label>Jumlah Keluar</label>
                             <input type="number" class="form-control" wire:model="qty_out">

@@ -9,13 +9,19 @@ use Illuminate\Support\Facades\Auth;
 
 class TransactionOut extends Component
 {
-    public $barangs, $item_code, $item_name, $qty_out, $destination, $showModal = false;
-    public $history;
-    public $searchTerm = '';
+    public $barangs;
+    public $item_code, $item_name, $qty_out, $destination, $unit;
+    public $showModal = false;
+    public $showConfirmSubmit = false;
+    public $tempItems = [];
+    public $history = [];
+
+    public $searchQuery = '';
     public $searchResults = [];
     public $searchRiwayat = '';
-    public $dateFrom;
-    public $dateTo;
+    public $dateFrom, $dateTo;
+
+    protected $listeners = ['konfirmasiSubmit' => 'submitOut'];
 
     public function mount()
     {
@@ -23,36 +29,23 @@ class TransactionOut extends Component
         $this->loadHistory();
     }
 
-    public function loadHistory()
+    public function render()
     {
-        $query = TransactionOutModel::query();
-
-        if ($this->searchRiwayat) {
-            $query->where(function ($q) {
-                $q->where('item_code', 'like', '%' . $this->searchRiwayat . '%')
-                  ->orWhere('item_name', 'like', '%' . $this->searchRiwayat . '%');
-            });
-        }
-
-        if ($this->dateFrom && $this->dateTo) {
-            $from = $this->dateFrom . ' 00:00:00';
-            $to = $this->dateTo . ' 23:59:59';
-
-            $query->whereBetween('created_at', [$from, $to]);
-        }
-
-        $this->history = $query->latest()->get();
+        return view('transaction.out');
     }
 
     public function openModal()
     {
         $this->resetInput();
+        $this->tempItems = [];
         $this->showModal = true;
+        $this->showConfirmSubmit = false;
     }
 
     public function closeModal()
     {
         $this->showModal = false;
+        $this->showConfirmSubmit = false;
     }
 
     public function resetInput()
@@ -60,16 +53,17 @@ class TransactionOut extends Component
         $this->item_code = '';
         $this->item_name = '';
         $this->qty_out = '';
+        $this->unit = '';
         $this->destination = '';
-        $this->searchTerm = '';
+        $this->searchQuery = '';
         $this->searchResults = [];
     }
 
-    public function updatedSearchTerm()
+    public function updatedSearchQuery()
     {
-        if (strlen($this->searchTerm) > 1) {
-            $this->searchResults = DataBaseBarang::where('item_code', 'like', '%' . $this->searchTerm . '%')
-                ->orWhere('item_name', 'like', '%' . $this->searchTerm . '%')
+        if (strlen($this->searchQuery) >= 2) {
+            $this->searchResults = DataBaseBarang::where('item_code', 'like', '%' . $this->searchQuery . '%')
+                ->orWhere('item_name', 'like', '%' . $this->searchQuery . '%')
                 ->limit(10)
                 ->get();
         } else {
@@ -80,70 +74,125 @@ class TransactionOut extends Component
     public function selectItem($itemCode)
     {
         $barang = DataBaseBarang::where('item_code', $itemCode)->first();
+
         if ($barang) {
             $this->item_code = $barang->item_code;
             $this->item_name = $barang->item_name;
-            $this->searchTerm = '';
+            $this->unit = $barang->unit;
+            $this->searchQuery = $barang->item_code . ' - ' . $barang->item_name;
             $this->searchResults = [];
         }
     }
 
-    public function submitOut()
+    public function updatedItemCode($value)
+    {
+        $barang = DataBaseBarang::where('item_code', $value)->first();
+        $this->item_name = $barang->item_name ?? '';
+        $this->unit = $barang->unit ?? '';
+    }
+
+    public function addItemToList()
     {
         $this->validate([
             'item_code' => 'required',
             'qty_out' => 'required|numeric|min:1',
         ]);
 
-        $barang = DataBaseBarang::where('item_code', $this->item_code)->first();
+        foreach ($this->tempItems as $item) {
+            if ($item['item_code'] === $this->item_code) {
+                session()->flash('message', 'Barang sudah ada di daftar.');
+                return;
+            }
+        }
 
+        $barang = DataBaseBarang::where('item_code', $this->item_code)->first();
         if (!$barang) {
             session()->flash('message', 'Barang tidak ditemukan.');
             return;
         }
 
         if ($barang->Quantity < $this->qty_out) {
-            session()->flash('message', 'Stok tidak cukup. Stok tersedia: ' . $barang->Quantity);
+            session()->flash('message', 'Stok tidak cukup. Tersedia: ' . $barang->Quantity);
             return;
         }
 
-        // Kurangi qty dari data barang
-        $barang->Quantity -= $this->qty_out;
-        $barang->save();
-
-        // Simpan transaksi
-        TransactionOutModel::create([
-            'item_code' => $this->item_code,
+        $this->tempItems[] = [
+            'item_code' => $barang->item_code,
             'item_name' => $barang->item_name,
             'qty_out' => $this->qty_out,
             'unit' => $barang->unit,
-            'destination' => $this->destination,
-            'user' => Auth::user()?->name ?? 'Unknown',
+        ];
+
+        $this->reset(['item_code', 'item_name', 'qty_out', 'unit', 'searchQuery', 'searchResults']);
+    }
+
+    public function removeItem($index)
+    {
+        unset($this->tempItems[$index]);
+        $this->tempItems = array_values($this->tempItems);
+    }
+
+    public function submitOut()
+    {
+        $this->validate([
+            'destination' => 'required|string|max:255',
         ]);
 
-        session()->flash('message', 'Stok berhasil dikurangi.');
+        foreach ($this->tempItems as $item) {
+            $barang = DataBaseBarang::where('item_code', $item['item_code'])->first();
+
+            if (!$barang) {
+                session()->flash('message', 'Barang tidak ditemukan: ' . $item['item_code']);
+                continue;
+            }
+
+            if ($barang->Quantity < $item['qty_out']) {
+                session()->flash('message', 'Stok tidak cukup untuk ' . $item['item_code'] . '. Tersedia: ' . $barang->Quantity);
+                continue;
+            }
+
+            $barang->Quantity -= $item['qty_out'];
+            $barang->save();
+
+            TransactionOutModel::create([
+                'item_code' => $item['item_code'],
+                'item_name' => $item['item_name'],
+                'qty_out' => $item['qty_out'],
+                'unit' => $item['unit'],
+                'destination' => strtoupper($this->destination),
+                'user' => strtoupper(Auth::user()?->name ?? 'Unknown'),
+            ]);
+        }
+
+        session()->flash('message', 'Transaksi berhasil disimpan.');
         $this->resetInput();
+        $this->tempItems = [];
         $this->loadHistory();
         $this->closeModal();
     }
 
-    public function updatedSearchRiwayat()
+    public function loadHistory()
     {
-        $this->loadHistory();
+        $query = TransactionOutModel::query();
+
+        if ($this->searchRiwayat) {
+            $query->where(function ($q) {
+                $q->where('item_code', 'like', '%' . $this->searchRiwayat . '%')
+                    ->orWhere('item_name', 'like', '%' . $this->searchRiwayat . '%');
+            });
+        }
+
+        if ($this->dateFrom && $this->dateTo) {
+            $query->whereBetween('created_at', [
+                $this->dateFrom . ' 00:00:00',
+                $this->dateTo . ' 23:59:59'
+            ]);
+        }
+
+        $this->history = $query->latest()->get();
     }
 
-    public function updatedDateFrom()
-    {
-        $this->loadHistory();
-    }
-
-    public function updatedDateTo()
-    {
-        $this->loadHistory();
-    }
-
-    public function render()
-    {
-        return view('transaction.out');
-    }
+    public function updatedSearchRiwayat() { $this->loadHistory(); }
+    public function updatedDateFrom() { $this->loadHistory(); }
+    public function updatedDateTo() { $this->loadHistory(); }
 }

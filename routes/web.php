@@ -20,6 +20,7 @@ use App\Http\Livewire\Index;
 use App\Http\Livewire\LoginExample;
 use App\Http\Livewire\ProfileExample;
 use App\Http\Livewire\RegisterExample;
+use App\Http\Livewire\StocktakingReport;
 use App\Http\Livewire\Transactions;
 use Illuminate\Support\Facades\Route;
 use App\Http\Livewire\ResetPasswordExample;
@@ -35,6 +36,10 @@ use App\Http\Livewire\StocktakingGdtp;
 use App\Http\Livewire\StocktakingProduction;
 use App\Http\Livewire\StocktakingIndex;
 use App\Http\Livewire\StockTakingDetailPage;
+use App\Http\Livewire\StockTakingReport as StockTakingReportPage;
+use App\Http\Livewire\StockTakingReportDetail;
+use App\Http\Livewire\TransactionReport;
+
 
 /*
 |--------------------------------------------------------------------------
@@ -71,6 +76,8 @@ Route::get('/transaction-create', TransactionCreate::class)->name('transaction-c
 Route::get('/transaction-in', TransactionIn::class)->name('transaction.in');
 Route::get('/transaction-out', TransactionOut::class)->name('transaction.out');
 Route::get('/transaction/return', TransactionReturn::class)->name('transaction.return');
+Route::get('/transaction/report', TransactionReport::class)->name('transaction.report');
+
 
 //Stock Tacking rooot
 Route::get('/stocktaking/gdtp', StocktakingGdtp::class)->name('stocktaking.gdtp');
@@ -78,8 +85,9 @@ Route::get('/stocktaking/production', StocktakingProduction::class)->name('stock
 Route::get('/stocktaking/create', StocktakingIndex::class)->name('stocktaking.create');
 Route::get('/stocktaking/detail', StockTakingDetailPage::class)->name('stocktaking.detail');
 Route::get('/stocktaking/detail/{id}', StockTakingDetailPage::class)->name('stocktaking.detail');
-
-
+Route::get('/stocktaking/report', StocktakingReport::class)->name('stocktaking.report');
+Route::get('/stocktaking/report', StockTakingReportPage::class)->name('stocktaking.report');
+Route::get('/stocktaking/report/{id}', StockTakingReportDetail::class)->name('stocktaking.reportdetail');
 
 
 Route::middleware('auth')->group(function () {
@@ -123,3 +131,8 @@ Route::get('/export-transaction-in', function (Request $request) {
 });
 
 Route::get('/export-transaction-out', [App\Http\Controllers\ExportController::class, 'exportTransactionOut']);
+
+use App\Exports\StockTakingReportExport;
+Route::get('/export-stocktaking-detail/{id}', function ($id) {
+    return Excel::download(new StockTakingReportExport($id), 'StockTakingDetail_' . $id . '.xlsx');
+})->name('stocktaking.report.export');

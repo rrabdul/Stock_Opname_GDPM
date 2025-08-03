@@ -12,6 +12,7 @@ class TransactionIn extends Model
     protected $fillable = [
         'item_code',
         'item_name',
+        'unit',
         'qty_in',
         'source',
         'user_name',

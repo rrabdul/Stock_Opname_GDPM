@@ -1,27 +1,30 @@
-<nav class="navbar navbar-top navbar-expand navbar-dashboard navbar-dark ps-0 pe-2 pb-0">
-  <div class="container-fluid px-0">
-    <div class="d-flex justify-content-between w-100" id="navbarSupportedContent">
-      <div class="d-flex align-items-center">
-      <!-- Navbar links -->
+<nav class="navbar navbar-top navbar-expand navbar-dashboard >
+    <div class="container-fluid">
+        <div class="d-flex justify-content-between align-items-center w-100">
 
-          </a>
-          <div class="dropdown-menu dropdown-menu-lg dropdown-menu-center mt-2 py-0">
-            <div class="list-group list-group-flush">
-              <a href="#" class="text-center text-primary fw-bold border-bottom border-light py-3">Notifications</a>
-              <a href="#" class="list-group-item list-group-item-action border-bottom">
-                <div class="row align-items-center">
-                  <div class="col-auto">
-                </div>
-              </a>
+            <!-- Bagian kiri: Salam -->
+            <div>
+                <h5 class="text-dark mb-0">
+                    Hi, {{ trim(Auth::user()?->first_name . ' ' . Auth::user()?->last_name) ?? 'User' }}
+                </h5>
+            </div>
 
-                    <a href="#" class="list-group-item list-group-item-action border-bottom">
-                <div class="row align-items-center">
-                  <div class="col-auto">
-                </div>
-              </a>
-               </div>
-          </div>
-      </ul>
+            <!-- Bagian kanan: Profil dropdown -->
+            <div class="dropdown">
+                <a class="nav-link dropdown-toggle d-flex align-items-center text-dark" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                    <i class="fas fa-user-circle fa-lg"></i>
+                    <span class="ms-2">{{ Auth::user()?->first_name }}</span>
+                </a>
+                <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="navbarDropdown">
+                    <li><a class="dropdown-item" href="/profile">Profile</a></li>
+                    <li><a class="dropdown-item" href="/settings">Settings</a></li>
+                    <li>
+                        <hr class="dropdown-divider">
+                    </li>
+                    <li><a class="dropdown-item" href="/logout">Logout</a></li>
+                </ul>
+            </div>
+
+        </div>
     </div>
-  </div>
 </nav>

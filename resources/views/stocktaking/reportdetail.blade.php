@@ -26,26 +26,26 @@
         <table class="table table-hover">
         <thead>
             <tr>
-                <th wire:click="sortBy('item_code')" style="cursor:pointer;">Item Code</th>
-                <th wire:click="sortBy('item_name')" style="cursor:pointer;">Item Name</th>
-                <th wire:click="sortBy('stock_sistem')" style="cursor:pointer;">Stock System</th>
-                <th wire:click="sortBy('stock_aktual')" style="cursor:pointer;">Actual Stock</th>
-                <th wire:click="sortBy('selisih')" style="cursor:pointer;">Different</th>
+                <th wire:click="sortBy('item_code')">Item Code</th>
+                <th wire:click="sortBy('item_name')">Item Name</th>
+                <th wire:click="sortBy('stock_aktual')">Actual Stock GDTP</th>
+                <th wire:click="sortBy('stock_line')">Actual Stock Line</th>
+                <th wire:click="sortBy('total_stock')">Total Stock</th>
+                <th wire:click="sortBy('unit')">Unit</th>
             </tr>
-        </thead>
-            <tbody>
-                @foreach ($details as $item)
-                    <tr>
-                        <td>{{ $item['item_code'] }}</td>
-                        <td>{{ $item['item_name'] }}</td>
-                        <td>{{ $item['stock_sistem'] }}</td>
-                        <td>{{ $item['stock_aktual'] }}</td>
-                        <td class="{{ $item['selisih'] != 0 ? 'text-danger fw-bold' : 'text-success' }}">
-                            {{ $item['selisih'] }}
-                        </td>
-                    </tr>
-                @endforeach
-            </tbody>
+                </thead>
+                <tbody>
+                    @foreach ($details as $item)
+                        <tr>
+                            <td>{{ $item['item_code'] }}</td>
+                            <td>{{ $item['item_name'] }}</td>
+                            <td>{{ $item['stock_aktual'] }}</td>
+                            <td>{{ $item['stock_line'] }}</td>
+                            <td>{{ $item['stock_aktual'] + $item['stock_line'] }}</td>
+                            <td>{{ $item['unit'] }}</td>
+                        </tr>
+                    @endforeach
+                </tbody>
         </table>
     </div>
 </div>

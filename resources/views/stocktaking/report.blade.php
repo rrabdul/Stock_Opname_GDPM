@@ -39,7 +39,7 @@
                     <tr>
                         <td>{{ $report->title }}</td>
                         <td>{{ $report->area }}</td>
-                        <td>{{ \Carbon\Carbon::parse($report->created_at)->format('d M Y') }}</td>
+                        <td>{{ \Carbon\Carbon::parse($report->created_at)->format('d M Y H:i') }}</td>
                         <td><span class="badge bg-success">{{ $report->status }}</span></td>
                         <td>{{ $report->submitted_by ?? '-' }}</td> {{-- Tampilkan submit by --}}
                         <td>

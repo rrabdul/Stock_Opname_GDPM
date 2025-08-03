@@ -14,6 +14,8 @@ class StockTakingDetail extends Model
         'item_code',
         'item_name',
         'qty_aktual',
+        'qty_line',
+        'unit',
         'user',
     ];
 

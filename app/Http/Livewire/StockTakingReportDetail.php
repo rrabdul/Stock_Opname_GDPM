@@ -12,14 +12,13 @@ class StockTakingReportDetail extends Component
     public $header;
     public $details;
 
-    // Tambahan untuk sorting
     public $sortField = 'item_name';
     public $sortDirection = 'asc';
 
     public function mount($id)
     {
         $this->header = StockTakingHeader::findOrFail($id);
-        $this->loadDetails(); // pertama kali load
+        $this->loadDetails();
     }
 
     public function sortBy($field)
@@ -31,7 +30,7 @@ class StockTakingReportDetail extends Component
             $this->sortDirection = 'asc';
         }
 
-        $this->loadDetails(); // reload dengan arah sort baru
+        $this->loadDetails();
     }
 
     public function loadDetails()
@@ -40,21 +39,27 @@ class StockTakingReportDetail extends Component
 
         $mapped = $rawDetails->map(function ($detail) {
             $item = DataBaseBarang::where('item_code', $detail->item_code)->first();
-            $stock_sistem = $item?->Quantity ?? 0;
+
+            $stock_aktual = $detail->qty_aktual ?? 0;
+            $stock_line = $detail->qty_line ?? 0;
+            $unit = $item?->unit ?? '-';
 
             return [
-                'item_code' => $detail->item_code,
-                'item_name' => $item?->item_name ?? '-',
-                'stock_sistem' => $stock_sistem,
-                'stock_aktual' => $detail->qty_aktual,
-                'selisih' => $detail->qty_aktual - $stock_sistem,
+                'item_code'     => $detail->item_code,
+                'item_name'     => $item?->item_name ?? '-',
+                'stock_aktual'  => $stock_aktual,
+                'stock_line'    => $stock_line,
+                'total_stock'   => $stock_aktual + $stock_line,
+                'unit'          => $unit,
             ];
         });
 
+        // Amankan agar tidak error jika sort field tidak tersedia
         $this->details = $mapped->sortBy(function ($item) {
-            return $item[$this->sortField];
+            return $item[$this->sortField] ?? null;
         }, SORT_REGULAR, $this->sortDirection === 'desc')->values();
     }
+
 
     public function render()
     {

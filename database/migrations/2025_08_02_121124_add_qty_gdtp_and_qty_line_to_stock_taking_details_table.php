@@ -11,8 +11,10 @@ return new class extends Migration
      */
     public function up()
     {
-        Schema::table('stock_taking_headers', function (Blueprint $table) {
-
+        Schema::table('stock_taking_details', function (Blueprint $table) {
+            $table->integer('qty_gdtp')->nullable()->after('item_name');
+            $table->integer('qty_line')->nullable()->after('qty_gdtp');
+            $table->dropColumn('qty_aktual'); // jika sebelumnya sudah dipakai
         });
     }
 
@@ -22,7 +24,7 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::table('stock_taking_headers', function (Blueprint $table) {
+        Schema::table('stock_taking_details', function (Blueprint $table) {
             //
         });
     }

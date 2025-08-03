@@ -33,7 +33,7 @@
 
     <div class="row mb-3 align-items-end">
         <div class="col-md-3">
-            <input type="text" class="form-control form-control-sm py-1" placeholder="Search fo Items..." wire:model.debounce.500ms="searchTitle">
+            <input type="text" class="form-control form-control-sm py-1" placeholder="Search fo Items..." wire:model.debounce.500ms="searchItem">
         </div>
         <div class="col-md-2">
             <input type="date" class="form-control form-control-sm py-1" wire:model="dateFrom">
@@ -48,6 +48,11 @@
             {{ session('message') }}
         </div>
     @endif
+        @if (session()->has('error'))
+    <div class="alert alert-danger mt-2">
+        {{ session('error') }}
+    </div>
+    @endif
 
     {{-- Modal Tambah/Edit --}}
     <div class="modal fade @if($showModal) show d-block @endif"
@@ -61,7 +66,6 @@
                     </div>
                     <div class="modal-body">
                         <div class="mb-3">
-                            <label>Kode Barang</label>
                             <div class="mb-3" wire:click.away="$set('searchResults', [])">
                             <label>Kode / Nama Barang</label>
                             <input type="text" class="form-control" wire:model.debounce.300ms="searchQuery" placeholder="Ketik kode atau nama barang...">
@@ -89,10 +93,16 @@
                         </div>
 
                         <div class="mb-3">
-                            <label>Qty Aktual</label>
+                            <label>Qty Gdtp</label>
                             <input type="number" class="form-control" wire:model.defer="qty_aktual">
                             @error('qty_aktual') <small class="text-danger">{{ $message }}</small> @enderror
                         </div>
+                        <div class="mb-3">
+                            <label>Qty Line</label>
+                            <input type="number" class="form-control" wire:model.defer="qty_line">
+                            @error('qty_line') <small class="text-danger">{{ $message }}</small> @enderror
+                        </div>
+
                     </div>
                     <div class="modal-footer">
                         <button type="button" wire:click="closeModal" class="btn btn-secondary">Batal</button>
@@ -111,31 +121,33 @@
                 <tr>
                     <th>Item Code</th>
                     <th>Item Name</th>
-                    <th>Actual Qty</th>
+                    <th>Actual Qty GDTP</th>
+                    <th>Actual Qty LINE</th>
+                    <th>Unit</th>
                     <th>User</th>
                     <th>Update</th>
                     <th>Action</th>
                 </tr>
             </thead>
             <tbody>
-                @forelse($details as $detail)
-                    <tr>
-                        <td>{{ $detail->item_code }}</td>
-                        <td>{{ $detail->item_name }}</td>
-                        <td>{{ $detail->qty_aktual }}</td>
-                        <td>{{ $detail->user }}</td>
-                        <td>{{ \Carbon\Carbon::parse($detail->updated_at)->format('d M Y H:i') }}</td>
-                        <td>
-                            @if ($header->status !== 'Done')
+                @forelse ($details as $detail)
+                        <tr>
+                            <td>{{ $detail->item_code }}</td>
+                            <td>{{ $detail->item_name }}</td>
+                            <td>{{ $detail->qty_aktual }}</td>
+                            <td>{{ $detail->qty_line }}</td>
+                            <td>{{ $detail->unit }}</td>
+                            <td>{{ $detail->user }}</td>
+                            <td>{{ $detail->updated_at->format('d M Y H:i') }}</td>
+                            <td>
                                 <button wire:click="edit({{ $detail->id }})" class="btn btn-sm btn-outline-primary">Edit</button>
-                            @endif
-                        </td>
-                    </tr>
-                @empty
-                    <tr>
-                        <td colspan="6">Belum ada data barang</td>
-                    </tr>
-                @endforelse
+                            </td>
+                        </tr>
+                    @empty
+                        <tr>
+                            <td colspan="8" class="text-center">Belum ada data barang</td>
+                        </tr>
+                    @endforelse
             </tbody>
         </table>
     </div>

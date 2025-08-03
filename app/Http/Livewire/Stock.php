@@ -13,6 +13,7 @@ class Stock extends Component
     public $showModal = false;
     public $isEditMode = false;
     public $searchTerm = ''; // pencarian
+    public $Quantity;
 
     public function mount()
     {
@@ -80,22 +81,30 @@ class Stock extends Component
 
         $this->item_name = strtoupper($this->item_name);
 
-        DataBaseBarang::updateOrCreate(
-            ['id' => $this->barangId],
-            [
-                'item_code' => $this->item_code,
-                'item_name' => $this->item_name,
-                'Quantity' => $this->Quantity,
-                'unit' => $this->unit,
-                'Area' => $this->Area,
-                'create_date' => $this->create_date,
-            ]
-        );
+        if ($this->isEditMode && $this->barangId) {
+            $barang = DataBaseBarang::findOrFail($this->barangId);
+        } else {
+            $barang = new DataBaseBarang();
+        }
 
-        session()->flash('message', $this->isEditMode ? 'Data berhasil diupdate.' : 'Data berhasil disimpan.');
+        $barang->item_code = $this->item_code;
+        $barang->item_name = $this->item_name;
+        $barang->Quantity = $this->Quantity;
+        $barang->unit = $this->unit;
+        $barang->Area = $this->Area;
+        $barang->create_date = $this->create_date;
+
+        try {
+            $barang->save();
+            session()->flash('message', $this->isEditMode ? 'Data berhasil diupdate.' : 'Data berhasil disimpan.');
+        } catch (\Exception $e) {
+            session()->flash('message', 'Gagal menyimpan data: ' . $e->getMessage());
+        }
+
         $this->closeModal();
         $this->loadBarangs();
     }
+
 
     public function delete()
     {

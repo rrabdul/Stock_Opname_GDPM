@@ -10,13 +10,11 @@ use Illuminate\Support\Facades\Auth;
 
 class StockTakingDetailPage extends Component
 {
-    // Data utama
     public $header;
     public $details = [];
     public $barangs = [];
 
-    // Form input
-    public $item_code, $item_name, $qty_aktual;
+    public $item_code, $item_name, $qty_aktual, $qty_line;
     public $editingId = null;
     public $showModal = false;
 
@@ -24,10 +22,12 @@ class StockTakingDetailPage extends Component
     public $dateFrom = null;
     public $dateTo = null;
 
-    // Pencarian daftar barang di tabel
     public $searchItem = '';
-
     public $showConfirmSubmit = false;
+
+    public $searchQuery = '';
+    public $searchResults = [];
+    public $unit;
 
     public function mount($id)
     {
@@ -80,7 +80,10 @@ class StockTakingDetailPage extends Component
         $this->item_code = '';
         $this->item_name = '';
         $this->qty_aktual = '';
+        $this->qty_line = '';
         $this->editingId = null;
+        $this->searchQuery = '';
+        $this->searchResults = [];
     }
 
     public function updatedItemCode($value)
@@ -96,6 +99,8 @@ class StockTakingDetailPage extends Component
         $this->item_code = $detail->item_code;
         $this->item_name = $detail->item_name;
         $this->qty_aktual = $detail->qty_aktual;
+        $this->qty_line = $detail->qty_line;
+        $this->unit = DataBaseBarang::where('item_code', $detail->item_code)->value('unit');
         $this->showModal = true;
     }
 
@@ -104,18 +109,22 @@ class StockTakingDetailPage extends Component
         $this->validate([
             'item_code' => 'required',
             'item_name' => 'required',
-            'qty_aktual' => 'required|integer|min:0',
+            'qty_aktual' => 'nullable|numeric|min:0',
+            'qty_line' => 'nullable|numeric|min:0',
         ]);
 
-        // Cek apakah item sudah ada sebelumnya (kecuali kalau sedang edit)
+        // Ubah nilai kosong jadi 0
+        $qtyAktual = $this->qty_aktual !== null && $this->qty_aktual !== '' ? $this->qty_aktual : 0;
+        $qtyLine   = $this->qty_line !== null && $this->qty_line !== '' ? $this->qty_line : 0;
+
         if (!$this->editingId) {
             $exists = StockTakingDetail::where('stock_taking_header_id', $this->header->id)
                 ->where('item_code', $this->item_code)
                 ->exists();
 
             if ($exists) {
-                $this->closeModal(); // ⬅️ Tutup modal sebelum return
-                session()->flash('message', 'Barang ini sudah ada. Tidak boleh input ganda.');
+                $this->closeModal();
+                session()->flash('error', 'Barang ini sudah ada. Tidak boleh input ganda.');
                 return;
             }
         }
@@ -125,7 +134,9 @@ class StockTakingDetailPage extends Component
             $detail->update([
                 'item_code' => $this->item_code,
                 'item_name' => $this->item_name,
-                'qty_aktual' => $this->qty_aktual,
+                'qty_aktual' => $qtyAktual,
+                'qty_line' => $qtyLine,
+                'unit' => $this->unit,
                 'user' => Auth::user()->name ?? 'Guest',
             ]);
         } else {
@@ -133,16 +144,18 @@ class StockTakingDetailPage extends Component
                 'stock_taking_header_id' => $this->header->id,
                 'item_code' => $this->item_code,
                 'item_name' => $this->item_name,
-                'qty_aktual' => $this->qty_aktual,
+                'qty_aktual' => $qtyAktual,
+                'qty_line' => $qtyLine,
+                'unit' => $this->unit,
                 'user' => Auth::user()->name ?? 'Guest',
             ]);
         }
 
         session()->flash('message', 'Barang berhasil disimpan.');
+        $this->resetInput();
         $this->closeModal();
         $this->loadDetails();
     }
-
 
 
     public function confirmSubmit()
@@ -157,7 +170,6 @@ class StockTakingDetailPage extends Component
         $this->header->save();
 
         session()->flash('message', 'Stock Opname berhasil disubmit.');
-
         return redirect()->route('stocktaking.detail', ['id' => $this->header->id]);
     }
 
@@ -165,9 +177,6 @@ class StockTakingDetailPage extends Component
     {
         $this->loadDetails();
     }
-
-    public $searchQuery = '';
-    public $searchResults = [];
 
     public function updatedSearchQuery()
     {
@@ -187,6 +196,7 @@ class StockTakingDetailPage extends Component
         if ($barang) {
             $this->item_code = $barang->item_code;
             $this->item_name = $barang->item_name;
+            $this->unit = $barang->unit; // ambil unit di sini
             $this->searchQuery = $barang->item_code . ' - ' . $barang->item_name;
             $this->searchResults = [];
         }
@@ -194,3 +204,4 @@ class StockTakingDetailPage extends Component
 
 
 }
+

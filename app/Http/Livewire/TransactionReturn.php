@@ -9,14 +9,25 @@ use Illuminate\Support\Facades\Auth;
 
 class TransactionReturn extends Component
 {
-    public $barangs, $item_code, $qty_return, $source, $keterangan, $showModal = false;
+    public $barangs, $item_code, $item_name, $qty_return, $source, $keterangan, $unit;
+    public $showModal = false;
+
     public $searchRiwayat, $dateFrom, $dateTo;
     public $history;
+
+    public $searchQuery = '';
 
     public function mount()
     {
         $this->barangs = DataBaseBarang::all();
         $this->loadHistory();
+    }
+
+    public function render()
+    {
+        return view('transaction.return', [
+            'searchResults' => $this->searchResults, // ← tetap bisa dipakai di Blade
+        ]);
     }
 
     public function openModal()
@@ -33,17 +44,47 @@ class TransactionReturn extends Component
     public function resetInput()
     {
         $this->item_code = '';
+        $this->item_name = '';
         $this->qty_return = '';
         $this->source = '';
+        $this->keterangan = '';
+        $this->unit = '';
+        $this->searchQuery = '';
+        $this->searchResults = [];
+    }
+
+    public function updatedSearchQuery()
+    {
+        if (strlen($this->searchQuery) >= 2) {
+            $this->searchResults = DataBaseBarang::where('item_code', 'like', '%' . $this->searchQuery . '%')
+                ->orWhere('item_name', 'like', '%' . $this->searchQuery . '%')
+                ->limit(10)
+                ->get();
+        } else {
+            $this->searchResults = [];
+        }
+    }
+
+    public function selectItem($itemCode)
+    {
+        $barang = DataBaseBarang::where('item_code', $itemCode)->first();
+
+        if ($barang) {
+            $this->item_code = $barang->item_code;
+            $this->item_name = $barang->item_name;
+            $this->unit = $barang->unit;
+            $this->searchQuery = $barang->item_code . ' - ' . $barang->item_name;
+            $this->searchResults = [];
+        }
     }
 
     public function submitReturn()
     {
-                $this->validate([
+        $this->validate([
             'item_code' => 'required|exists:data_base_barang,item_code',
             'qty_return' => 'required|numeric|min:1',
             'source' => 'nullable|string|max:255',
-            'keterangan' => 'required|nullable|string|max:255',
+            'keterangan' => 'required|string|max:255',
         ]);
 
         $barang = DataBaseBarang::where('item_code', $this->item_code)->first();
@@ -53,18 +94,16 @@ class TransactionReturn extends Component
             return;
         }
 
-        // Simpan ke tabel return
         ReturnModel::create([
             'item_code' => $barang->item_code,
             'item_name' => $barang->item_name,
             'qty_return' => $this->qty_return,
             'unit' => $barang->unit,
-            'source' => strtoupper ($this->source),
-            'keterangan' => strtoupper ($this->keterangan),
-            'user' => strtoupper (Auth::user()->name ?? 'User'),
+            'source' => strtoupper($this->source),
+            'keterangan' => strtoupper($this->keterangan),
+            'user' => strtoupper(Auth::user()->name ?? 'User'),
         ]);
 
-        // Kurangi stok
         $barang->decrement('quantity', $this->qty_return);
 
         session()->flash('message', 'Transaksi return berhasil disimpan.');
@@ -79,7 +118,7 @@ class TransactionReturn extends Component
         if ($this->searchRiwayat) {
             $query->where(function ($q) {
                 $q->where('item_code', 'like', '%' . $this->searchRiwayat . '%')
-                  ->orWhere('item_name', 'like', '%' . $this->searchRiwayat . '%');
+                    ->orWhere('item_name', 'like', '%' . $this->searchRiwayat . '%');
             });
         }
 
@@ -94,14 +133,21 @@ class TransactionReturn extends Component
         $this->history = $query->latest()->get();
     }
 
-    public function render()
-    {
-        return view('transaction.return');
-    }
-
-        public function updatedSearchRiwayat()
+    public function updatedSearchRiwayat()
     {
         $this->loadHistory();
+    }
+
+    public function getSearchResultsProperty()
+    {
+        if (strlen($this->searchQuery) >= 2) {
+            return DataBaseBarang::where('item_code', 'like', '%' . $this->searchQuery . '%')
+                ->orWhere('item_name', 'like', '%' . $this->searchQuery . '%')
+                ->limit(10)
+                ->get();
+        }
+
+        return collect();
     }
 
 }

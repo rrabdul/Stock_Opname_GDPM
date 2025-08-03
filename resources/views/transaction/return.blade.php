@@ -1,4 +1,5 @@
 <div>
+    {{-- Header dan Filter --}}
     <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center py-4">
         <div class="d-block mb-2 mb-md-0">
             <h2 class="h4">Transaksi Return</h2>
@@ -31,53 +32,64 @@
         </div>
     @endif
 
-{{-- Modal Tambah Return --}}
-@if ($showModal)
-    <div class="modal fade show d-block" tabindex="-1" style="background-color: rgba(0,0,0,0.5)">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <form wire:submit.prevent="submitReturn">
-                    <div class="modal-header" style="background-color: #1f2937;">
-                        <h5 class="modal-title text-white">Transaksi Return</h5>
-                        <button type="button" class="btn-close" wire:click="closeModal" style="filter: invert(1);"></button>
-                    </div>
-                    <div class="modal-body">
-                        <div class="mb-3">
-                            <label>Kode Barang</label>
-                            <select wire:model="item_code" class="form-select">
-                                <option value="">-- Pilih Barang --</option>
-                                @foreach($barangs as $barang)
-                                    <option value="{{ $barang->item_code }}">{{ $barang->item_code }} - {{ $barang->item_name }}</option>
-                                @endforeach
-                            </select>
-                            @error('item_code') <small class="text-danger">{{ $message }}</small> @enderror
+    {{-- Modal Tambah Return --}}
+    @if ($showModal)
+        <div class="modal fade show d-block" tabindex="-1" style="background-color: rgba(0,0,0,0.5)">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <form wire:submit.prevent="submitReturn">
+                        <div class="modal-header bg-dark text-white">
+                            <h5 class="modal-title">Transaksi Return</h5>
+                            <button type="button" class="btn-close" wire:click="closeModal" style="filter: invert(1);"></button>
                         </div>
-                        <div class="mb-3">
-                            <label>Jumlah Return</label>
-                            <input type="number" class="form-control" wire:model="qty_return">
-                            @error('qty_return') <small class="text-danger">{{ $message }}</small> @enderror
+                        <div class="modal-body">
+                            {{-- Autocomplete --}}
+                            <div class="mb-3 position-relative" wire:click.away="$set('searchResults', [])">
+                                <label>Kode / Nama Barang</label>
+                                <input type="text" class="form-control" wire:model.debounce.300ms="searchQuery" placeholder="Ketik kode/nama barang...">
+
+                                @if (!empty($this->searchResults))
+                                    <ul class="list-group mt-1 position-absolute w-100" style="max-height: 200px; overflow-y: auto; z-index: 2000;">
+                                        @foreach ($this->searchResults as $result)
+                                            <li class="list-group-item list-group-item-action"
+                                                wire:click="selectItem('{{ $result->item_code }}')">
+                                                {{ $result->item_code }} - {{ $result->item_name }}
+                                            </li>
+                                        @endforeach
+                                    </ul>
+                                @endif
+
+                                @error('item_code') <small class="text-danger">{{ $message }}</small> @enderror
+                            </div>
+
+                            <div class="mb-3">
+                                <label>Jumlah Return</label>
+                                <input type="number" class="form-control" wire:model="qty_return">
+                                @error('qty_return') <small class="text-danger">{{ $message }}</small> @enderror
+                            </div>
+
+                            <div class="mb-3">
+                                <label>Sumber</label>
+                                <input type="text" class="form-control" wire:model="source">
+                                @error('source') <small class="text-danger">{{ $message }}</small> @enderror
+                            </div>
+
+                            <div class="mb-3">
+                                <label>Keterangan <span class="text-danger">*</span></label>
+                                <textarea class="form-control" wire:model="keterangan" rows="2" placeholder="Wajib diisi, contoh: reject"></textarea>
+                                @error('keterangan') <small class="text-danger">{{ $message }}</small> @enderror
+                            </div>
                         </div>
-                        <div class="mb-3">
-                            <label>Sumber</label>
-                            <input type="text" class="form-control" wire:model="source">
-                            @error('source') <small class="text-danger">{{ $message }}</small> @enderror
+
+                        <div class="modal-footer">
+                            <button type="button" wire:click="closeModal" class="btn btn-secondary">Batal</button>
+                            <button type="submit" class="btn btn-success">Simpan</button>
                         </div>
-                        <div class="mb-3">
-                            <label>Keterangan <span class="text-danger">*</span></label>
-                            <textarea class="form-control" wire:model="keterangan" rows="2" placeholder="Wajib diisi, contoh: riject "></textarea>
-                            @error('keterangan') <small class="text-danger">{{ $message }}</small> @enderror
-                        </div>
-                    </div>
-                    <div class="modal-footer">
-                        <button type="button" wire:click="closeModal" class="btn btn-secondary">Batal</button>
-                        <button type="submit" class="btn btn-success">Simpan</button> {{-- Ganti dari btn-warning --}}
-                    </div>
-                </form>
+                    </form>
+                </div>
             </div>
         </div>
-    </div>
-@endif
-
+    @endif
 
     {{-- Tabel Riwayat Return --}}
     <div class="card card-body border-0 shadow table-wrapper table-responsive mt-3">
@@ -108,7 +120,7 @@
                         <td>{{ \Carbon\Carbon::parse($trx->created_at)->format('d M Y H:i') }}</td>
                     </tr>
                 @empty
-                    <tr><td colspan="7">Belum ada transaksi return</td></tr>
+                    <tr><td colspan="8" class="text-center">Belum ada transaksi return</td></tr>
                 @endforelse
             </tbody>
         </table>
